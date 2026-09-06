@@ -1,0 +1,22 @@
+# Ambiente virtual Python
+.venv/
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+
+# Áudios gerados
+output/
+*.wav
+*.mp3
+
+# Arquivos temporários
+*.tmp
+*.log
+
+# Sistema operacional
+Thumbs.db
+.DS_Store
+
+# Modelos TTS locais
+models/
