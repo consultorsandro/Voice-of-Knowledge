@@ -12,4 +12,9 @@ class TextLoader:
         if not path.is_file():
             raise ValueError(f"O caminho informado não é um arquivo: {path}")
 
-        return path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8")
+
+        if not text.strip():
+            raise ValueError(f"O arquivo está vazio: {path}")
+
+        return text
