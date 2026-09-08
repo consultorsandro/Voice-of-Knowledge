@@ -144,7 +144,7 @@ class MainWindow(QMainWindow):
 
         self.thread.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-
+        self.worker.progress.connect(self.update_progress)
         self.thread.start()
 
     def conversion_finished(self, output_paths: list) -> None:
@@ -169,6 +169,21 @@ class MainWindow(QMainWindow):
             "Erro na conversão",
             message,
         )
+
+    def update_progress(
+    self,
+    current: int,
+    total: int,
+    word_count: int,
+) -> None:
+        self.progress_label.setText(
+        f"Progresso: parte {current}/{total}"
+    )
+
+        self.status_label.setText(
+        f"Gerando parte {current} de {total} "
+        f"({word_count} palavras)..."
+    )
 
     def select_input_file(self) -> None:
         file_path, _ = QFileDialog.getOpenFileName(

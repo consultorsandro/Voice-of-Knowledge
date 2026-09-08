@@ -8,6 +8,7 @@ from voice_of_knowledge.core.conversion_pipeline import ConversionPipeline
 class ConversionWorker(QObject):
     finished = Signal(list)
     error = Signal(str)
+    progress = Signal(int, int, int)
 
     def __init__(
         self,
@@ -21,6 +22,18 @@ class ConversionWorker(QObject):
         self.output_dir = output_dir
         self.max_words = max_words
 
+    def report_progress(
+    self,
+    current: int,
+    total: int,
+    word_count: int,
+) -> None:
+        self.progress.emit(
+        current,
+        total,
+        word_count,
+    )
+
     @Slot()
     def run(self) -> None:
         try:
@@ -31,6 +44,7 @@ class ConversionWorker(QObject):
                     self.input_file,
                     self.output_dir,
                     self.max_words,
+                    self.report_progress,
                 )
 
             elif extension == ".pdf":
