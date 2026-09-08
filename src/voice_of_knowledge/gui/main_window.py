@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QMessageBox,
+    QProgressBar,
 )
 
 class MainWindow(QMainWindow):
@@ -70,9 +71,13 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(self.convert_button)
 
         self.progress_label = QLabel("Progresso:")
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setRange(0, 100)
+        self.progress_bar.setValue(0)
         self.status_label = QLabel("Aguardando conversão.")
 
         main_layout.addWidget(self.progress_label)
+        main_layout.addWidget(self.progress_bar)
         main_layout.addWidget(self.status_label)
 
         main_layout.addStretch()
@@ -122,8 +127,9 @@ class MainWindow(QMainWindow):
         max_words: int,
     ) -> None:
         self.convert_button.setEnabled(False)
-        self.status_label.setText("Iniciando conversão...")
 
+        self.status_label.setText("Iniciando conversão...")
+        self.progress_bar.setValue(0)
         self.thread = QThread()
 
         self.worker = ConversionWorker(
@@ -149,7 +155,7 @@ class MainWindow(QMainWindow):
 
     def conversion_finished(self, output_paths: list) -> None:
         self.convert_button.setEnabled(True)
-
+        self.progress_bar.setValue(100)
         self.status_label.setText(
             f"Conversão concluída. {len(output_paths)} arquivo(s) gerado(s)."
         )
@@ -176,6 +182,9 @@ class MainWindow(QMainWindow):
     total: int,
     word_count: int,
 ) -> None:
+        percent = int((current / total) * 100)
+        self.progress_bar.setValue(percent)
+
         self.progress_label.setText(
         f"Progresso: parte {current}/{total}"
     )
