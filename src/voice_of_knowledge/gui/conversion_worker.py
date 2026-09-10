@@ -23,16 +23,16 @@ class ConversionWorker(QObject):
         self.max_words = max_words
 
     def report_progress(
-    self,
-    current: int,
-    total: int,
-    word_count: int,
-) -> None:
+        self,
+        current: int,
+        total: int,
+        word_count: int,
+    ) -> None:
         self.progress.emit(
-        current,
-        total,
-        word_count,
-    )
+            current,
+            total,
+            word_count,
+        )
 
     @Slot()
     def run(self) -> None:
@@ -52,6 +52,7 @@ class ConversionWorker(QObject):
                     self.input_file,
                     self.output_dir,
                     self.max_words,
+                    self.report_progress,
                 )
 
             else:
