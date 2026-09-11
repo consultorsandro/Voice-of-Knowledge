@@ -43,6 +43,7 @@ class ConversionPipeline:
         output_dir: str,
         max_words: int = 350,
         progress_callback: Callable[[int, int, int], None] | None = None,
+        cancel_callback: Callable[[], bool] | None = None,
     ) -> list[Path]:
         chunks = ConversionPipeline.prepare_text(
             input_path,
@@ -53,6 +54,9 @@ class ConversionPipeline:
         output_paths = []
 
         for index, chunk in enumerate(chunks, start=1):
+            if cancel_callback is not None and cancel_callback():
+               print("Conversão cancelada.")
+               break
             if progress_callback is not None:
                 progress_callback(
                     index,
@@ -84,6 +88,7 @@ class ConversionPipeline:
         output_dir: str,
         max_words: int = 350,
         progress_callback: Callable[[int, int, int], None] | None = None,
+        cancel_callback: Callable[[], bool] | None = None,
     ) -> list[Path]:
         chunks = ConversionPipeline.prepare_pdf(
             input_path,
@@ -94,6 +99,9 @@ class ConversionPipeline:
         output_paths = []
 
         for index, chunk in enumerate(chunks, start=1):
+            if cancel_callback is not None and cancel_callback():
+               print("Conversão cancelada.")
+               break
             if progress_callback is not None:
                 progress_callback(
                     index,

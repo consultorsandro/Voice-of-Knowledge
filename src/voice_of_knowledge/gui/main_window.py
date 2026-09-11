@@ -67,8 +67,13 @@ class MainWindow(QMainWindow):
         self.convert_button = QPushButton("CONVERTER PARA ÁUDIO")
         self.convert_button.setMinimumHeight(45)
         self.convert_button.clicked.connect(self.validate_conversion)
+        self.cancel_button = QPushButton("CANCELAR CONVERSÃO")
+        self.cancel_button.setMinimumHeight(40)
+        self.cancel_button.setEnabled(False)
+        self.cancel_button.clicked.connect(self.cancel_conversion)
 
         main_layout.addWidget(self.convert_button)
+        main_layout.addWidget(self.cancel_button)
 
         self.progress_label = QLabel("Progresso:")
         self.progress_bar = QProgressBar()
@@ -127,6 +132,7 @@ class MainWindow(QMainWindow):
         max_words: int,
     ) -> None:
         self.convert_button.setEnabled(False)
+        self.cancel_button.setEnabled(True)
 
         self.status_label.setText("Iniciando conversão...")
         self.progress_bar.setValue(0)
@@ -144,17 +150,43 @@ class MainWindow(QMainWindow):
 
         self.worker.finished.connect(self.conversion_finished)
         self.worker.error.connect(self.conversion_error)
+        self.worker.cancelled.connect(self.conversion_cancelled)
 
         self.worker.finished.connect(self.thread.quit)
         self.worker.error.connect(self.thread.quit)
+        self.worker.cancelled.connect(self.thread.quit)
 
         self.thread.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.progress.connect(self.update_progress)
         self.thread.start()
 
+    def cancel_conversion(self) -> None:
+        if hasattr(self, "worker"):
+           self.worker.request_cancel()
+           self.cancel_button.setEnabled(False)
+           self.status_label.setText(
+            "Cancelamento solicitado. Aguardando a parte atual terminar..."
+        )    
+
+    def conversion_cancelled(self, output_paths: list) -> None:
+        self.convert_button.setEnabled(True)
+        self.cancel_button.setEnabled(False)
+
+        self.status_label.setText(
+        f"Conversão cancelada. {len(output_paths)} arquivo(s) foram concluídos."
+    )
+
+        QMessageBox.information(
+        self,
+        "Conversão cancelada",
+        f"A conversão foi interrompida com segurança.\n\n"
+        f"{len(output_paths)} arquivo(s) de áudio foram concluídos antes do cancelamento.",
+    )
+
     def conversion_finished(self, output_paths: list) -> None:
         self.convert_button.setEnabled(True)
+        self.cancel_button.setEnabled(False)
         self.progress_bar.setValue(100)
         self.status_label.setText(
             f"Conversão concluída. {len(output_paths)} arquivo(s) gerado(s)."
@@ -168,6 +200,7 @@ class MainWindow(QMainWindow):
 
     def conversion_error(self, message: str) -> None:
         self.convert_button.setEnabled(True)
+        self.cancel_button.setEnabled(False)
         self.status_label.setText("Erro durante a conversão.")
 
         QMessageBox.critical(

@@ -1,4 +1,5 @@
 from pathlib import Path
+from threading import Event
 
 from PySide6.QtCore import QObject, Signal, Slot
 
@@ -7,9 +8,10 @@ from voice_of_knowledge.core.conversion_pipeline import ConversionPipeline
 
 class ConversionWorker(QObject):
     finished = Signal(list)
+    cancelled = Signal(list)
     error = Signal(str)
     progress = Signal(int, int, int)
-
+    
     def __init__(
         self,
         input_file: str,
@@ -21,6 +23,18 @@ class ConversionWorker(QObject):
         self.input_file = input_file
         self.output_dir = output_dir
         self.max_words = max_words
+        self._cancel_event = Event()
+        self._cancel_acknowledged = False
+
+    def request_cancel(self) -> None:
+        self._cancel_event.set()
+
+    def is_cancel_requested(self) -> bool:
+        if self._cancel_event.is_set():
+          self._cancel_acknowledged = True
+          return True
+
+        return False
 
     def report_progress(
         self,
@@ -45,6 +59,7 @@ class ConversionWorker(QObject):
                     self.output_dir,
                     self.max_words,
                     self.report_progress,
+                    self.is_cancel_requested,   
                 )
 
             elif extension == ".pdf":
@@ -53,6 +68,7 @@ class ConversionWorker(QObject):
                     self.output_dir,
                     self.max_words,
                     self.report_progress,
+                    self.is_cancel_requested,
                 )
 
             else:
@@ -60,7 +76,10 @@ class ConversionWorker(QObject):
                     "Formato não suportado. Use arquivos TXT ou PDF."
                 )
 
-            self.finished.emit(output_paths)
+            if self._cancel_acknowledged:
+               self.cancelled.emit(output_paths)
+            else:
+               self.finished.emit(output_paths)
 
         except Exception as exc:
             self.error.emit(str(exc))
