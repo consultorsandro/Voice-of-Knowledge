@@ -17,11 +17,13 @@ class ConversionWorker(QObject):
         input_file: str,
         output_dir: str,
         max_words: int,
+        voice: str = "pm_alex",
     ) -> None:
         super().__init__()
 
         self.input_file = input_file
         self.output_dir = output_dir
+        self.voice = voice
         self.max_words = max_words
         self._cancel_event = Event()
         self._cancel_acknowledged = False
@@ -55,21 +57,23 @@ class ConversionWorker(QObject):
 
             if extension == ".txt":
                 output_paths = ConversionPipeline.convert_txt_to_mp3(
-                    self.input_file,
-                    self.output_dir,
-                    self.max_words,
-                    self.report_progress,
-                    self.is_cancel_requested,   
-                )
+                   input_path=self.input_file,
+                   output_dir=self.output_dir,
+                   max_words=self.max_words,
+                   voice=self.voice,
+                   progress_callback=self.report_progress,
+                   cancel_callback=self.is_cancel_requested,
+)
 
             elif extension == ".pdf":
                 output_paths = ConversionPipeline.convert_pdf_to_mp3(
-                    self.input_file,
-                    self.output_dir,
-                    self.max_words,
-                    self.report_progress,
-                    self.is_cancel_requested,
-                )
+                   input_path=self.input_file,
+                   output_dir=self.output_dir,
+                   max_words=self.max_words,
+                   voice=self.voice,
+                   progress_callback=self.report_progress,
+                   cancel_callback=self.is_cancel_requested,
+)
 
             else:
                 raise ValueError(

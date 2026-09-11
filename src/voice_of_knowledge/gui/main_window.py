@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QWidget,
     QMessageBox,
     QProgressBar,
+    QComboBox,
 )
 
 class MainWindow(QMainWindow):
@@ -49,6 +50,11 @@ class MainWindow(QMainWindow):
         self.max_words_spin.setValue(350)
         self.max_words_spin.setSuffix(" palavras")
 
+        self.voice_combo = QComboBox()
+        self.voice_combo.addItem("Alex — Masculina", "pm_alex")
+        self.voice_combo.addItem("Dora — Feminina", "pf_dora")
+        self.voice_combo.addItem("Santa — Masculina", "pm_santa")
+
         form_layout = QGridLayout()
 
         form_layout.addWidget(QLabel("Arquivo:"), 0, 0)
@@ -61,6 +67,9 @@ class MainWindow(QMainWindow):
 
         form_layout.addWidget(QLabel("Tamanho das partes:"), 2, 0)
         form_layout.addWidget(self.max_words_spin, 2, 1)
+
+        form_layout.addWidget(QLabel("Voz:"), 3, 0)
+        form_layout.addWidget(self.voice_combo, 3, 1)
 
         main_layout.addLayout(form_layout)
 
@@ -120,16 +129,18 @@ class MainWindow(QMainWindow):
             return
 
         self.start_conversion(
-            input_file,
-            output_dir,
-            self.max_words_spin.value(),
-        )
+        input_file,
+        output_dir,
+        self.max_words_spin.value(),
+        self.voice_combo.currentData(),
+)
 
     def start_conversion(
         self,
         input_file: str,
         output_dir: str,
         max_words: int,
+        voice: str,
     ) -> None:
         self.convert_button.setEnabled(False)
         self.cancel_button.setEnabled(True)
@@ -142,6 +153,7 @@ class MainWindow(QMainWindow):
             input_file,
             output_dir,
             max_words,
+            voice,
         )
 
         self.worker.moveToThread(self.thread)

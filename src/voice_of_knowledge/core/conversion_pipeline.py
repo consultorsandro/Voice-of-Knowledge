@@ -42,6 +42,7 @@ class ConversionPipeline:
         input_path: str,
         output_dir: str,
         max_words: int = 350,
+        voice: str = "pm_alex",
         progress_callback: Callable[[int, int, int], None] | None = None,
         cancel_callback: Callable[[], bool] | None = None,
     ) -> list[Path]:
@@ -50,13 +51,24 @@ class ConversionPipeline:
             max_words,
         )
 
-        engine = KokoroEngine()
+        engine = KokoroEngine(voice=voice)
         output_paths = []
+
 
         for index, chunk in enumerate(chunks, start=1):
             if cancel_callback is not None and cancel_callback():
-               print("Conversão cancelada.")
-               break
+                print("Conversão cancelada.")
+                break
+
+            output_path = Path(output_dir) / f"parte_{index:03d}.mp3"
+
+            if output_path.exists():
+                print(
+                    f"Parte {index}/{len(chunks)} já existe. Pulando..."
+                )
+                output_paths.append(output_path)
+                continue
+
             if progress_callback is not None:
                 progress_callback(
                     index,
@@ -70,7 +82,6 @@ class ConversionPipeline:
             )
 
             audio = engine.synthesize(chunk)
-            output_path = Path(output_dir) / f"parte_{index:03d}.mp3"
 
             AudioExporter.save_mp3(
                 audio,
@@ -87,6 +98,7 @@ class ConversionPipeline:
         input_path: str,
         output_dir: str,
         max_words: int = 350,
+        voice: str = "pm_alex",
         progress_callback: Callable[[int, int, int], None] | None = None,
         cancel_callback: Callable[[], bool] | None = None,
     ) -> list[Path]:
@@ -95,13 +107,23 @@ class ConversionPipeline:
             max_words,
         )
 
-        engine = KokoroEngine()
+        engine = KokoroEngine(voice=voice)
         output_paths = []
 
         for index, chunk in enumerate(chunks, start=1):
             if cancel_callback is not None and cancel_callback():
-               print("Conversão cancelada.")
-               break
+                print("Conversão cancelada.")
+                break
+
+            output_path = Path(output_dir) / f"parte_{index:03d}.mp3"
+          
+            if output_path.exists():
+                print(
+                    f"Parte {index}/{len(chunks)} já existe. Pulando..."
+                )
+                output_paths.append(output_path)
+                continue
+
             if progress_callback is not None:
                 progress_callback(
                     index,
@@ -115,7 +137,6 @@ class ConversionPipeline:
             )
 
             audio = engine.synthesize(chunk)
-            output_path = Path(output_dir) / f"parte_{index:03d}.mp3"
 
             AudioExporter.save_mp3(
                 audio,
