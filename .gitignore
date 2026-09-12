@@ -20,3 +20,5 @@ Thumbs.db
 
 # Modelos TTS locais
 models/
+build/
+dist/
